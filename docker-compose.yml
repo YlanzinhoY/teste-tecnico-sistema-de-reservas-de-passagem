@@ -1,0 +1,14 @@
+services:
+    postgres:
+        image: postgres:latest
+        container_name: postgres-sistema-de-reservas-de-passagem
+        ports:
+            - 5432:5432
+        environment:
+            POSTGRES_DB: sistema_de_passagem
+            POSTGRES_PASSWORD: postgres
+            POSTGRES_USER: postgres
+        volumes:
+            - postgres-data:/var/lib/postgresql/data
+volumes:
+    postgres-data:
