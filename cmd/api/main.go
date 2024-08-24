@@ -2,7 +2,7 @@ package main
 
 import (
 	"database/sql"
-	"github.com/google/uuid"
+	"github.com/ylanzinhoy/sistema-de-reserva-de-passagem/cmd/api/handler"
 	"github.com/ylanzinhoy/sistema-de-reserva-de-passagem/internal/entity"
 	"log"
 	"net/http"
@@ -34,52 +34,18 @@ func main() {
 		}
 	}(dbConn)
 
-	e.GET("/hello", func(c echo.Context) error {
+	query := db.New(dbConn)
+
+	managementHandler := handler.NewManagementRoutesHandler(query)
+
+	e.GET("/v1/management_route/", func(c echo.Context) error {
 		return c.String(http.StatusOK, "hello world!")
 	})
 
-	e.POST("/hello", func(c echo.Context) error {
-		var newManagementEntity entity.ManagementRoute
-		query := db.New(dbConn)
+	e.POST("/v1/management_route/", managementHandler.GetManagementRoutes)
 
-		if err := c.Bind(&newManagementEntity); err != nil {
-			return err
-		}
-
-		newManagementEntity.Id = uuid.NewString()
-
-		err = query.CreateManagementRoute(c.Request().Context(), db.CreateManagementRouteParams{
-			ID: newManagementEntity.Id,
-			RouteName: sql.NullString{
-				String: newManagementEntity.RouteName,
-				Valid:  newManagementEntity.RouteName != "",
-			},
-			Origin: sql.NullString{
-				String: newManagementEntity.Origin,
-				Valid:  newManagementEntity.Origin != "",
-			},
-			Destination: sql.NullString{
-				String: newManagementEntity.Destination,
-				Valid:  newManagementEntity.Destination != "",
-			},
-		})
-
-		if err != nil {
-			return err
-		}
-
-		err = c.JSON(http.StatusCreated, newManagementEntity)
-		if err != nil {
-			c.Error(err)
-			return err
-		}
-
-		return nil
-	})
-
-	e.PUT("/hello/:id", func(c echo.Context) error {
+	e.PUT("/v1/management_route/:id", func(c echo.Context) error {
 		id := c.Param("id")
-		query := db.New(dbConn)
 
 		var newManagementEntity entity.ManagementRoute
 
