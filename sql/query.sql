@@ -1,4 +1,4 @@
--- name: GetRoute :one
+-- name: GetRouteById :one
 select * from management_route
 where id = $1 limit 1;
 
@@ -18,4 +18,9 @@ INSERT INTO management_route (
 -- name: UpdateManagementRoute :exec
 update management_route
     set route_name =$2, origin = $3,destination = $4
+where id = $1;
+
+-- name: DeleteManagementRoute :exec
+
+delete from management_route
 where id = $1;

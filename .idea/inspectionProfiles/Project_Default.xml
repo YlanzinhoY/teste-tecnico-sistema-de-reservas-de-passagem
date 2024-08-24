@@ -1,0 +1,10 @@
+<component name="InspectionProjectProfileManager">
+  <profile version="1.0">
+    <option name="myName" value="Project Default" />
+    <inspection_tool class="GoDfaErrorMayBeNotNil" enabled="true" level="WARNING" enabled_by_default="true">
+      <methods>
+        <method importPath="github.com/ylanzinhoy/sistema-de-reserva-de-passagem/sql" receiver="*Queries" name="GetRouteById" />
+      </methods>
+    </inspection_tool>
+  </profile>
+</component>

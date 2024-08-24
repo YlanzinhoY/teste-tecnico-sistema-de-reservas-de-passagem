@@ -41,13 +41,24 @@ func (q *Queries) CreateManagementRoute(ctx context.Context, arg CreateManagemen
 	return err
 }
 
-const getRoute = `-- name: GetRoute :one
+const deleteManagementRoute = `-- name: DeleteManagementRoute :exec
+
+delete from management_route
+where id = $1
+`
+
+func (q *Queries) DeleteManagementRoute(ctx context.Context, id string) error {
+	_, err := q.db.ExecContext(ctx, deleteManagementRoute, id)
+	return err
+}
+
+const getRouteById = `-- name: GetRouteById :one
 select id, route_name, origin, destination from management_route
 where id = $1 limit 1
 `
 
-func (q *Queries) GetRoute(ctx context.Context, id string) (ManagementRoute, error) {
-	row := q.db.QueryRowContext(ctx, getRoute, id)
+func (q *Queries) GetRouteById(ctx context.Context, id string) (ManagementRoute, error) {
+	row := q.db.QueryRowContext(ctx, getRouteById, id)
 	var i ManagementRoute
 	err := row.Scan(
 		&i.ID,
