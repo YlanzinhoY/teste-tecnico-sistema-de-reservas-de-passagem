@@ -15,10 +15,11 @@ INSERT INTO management_route (
     $4
 ) RETURNING id, route_name, origin, destination;
 
--- name: UpdateManagementRoute :exec
+-- name: UpdateManagementRoute :one
 update management_route
     set route_name =$2, origin = $3,destination = $4
-where id = $1;
+where id = $1
+returning *;
 
 -- name: DeleteManagementRoute :exec
 

@@ -69,10 +69,11 @@ func (q *Queries) GetRouteById(ctx context.Context, id string) (ManagementRoute,
 	return i, err
 }
 
-const updateManagementRoute = `-- name: UpdateManagementRoute :exec
+const updateManagementRoute = `-- name: UpdateManagementRoute :one
 update management_route
     set route_name =$2, origin = $3,destination = $4
 where id = $1
+returning id, route_name, origin, destination
 `
 
 type UpdateManagementRouteParams struct {
@@ -82,12 +83,19 @@ type UpdateManagementRouteParams struct {
 	Destination sql.NullString
 }
 
-func (q *Queries) UpdateManagementRoute(ctx context.Context, arg UpdateManagementRouteParams) error {
-	_, err := q.db.ExecContext(ctx, updateManagementRoute,
+func (q *Queries) UpdateManagementRoute(ctx context.Context, arg UpdateManagementRouteParams) (ManagementRoute, error) {
+	row := q.db.QueryRowContext(ctx, updateManagementRoute,
 		arg.ID,
 		arg.RouteName,
 		arg.Origin,
 		arg.Destination,
 	)
-	return err
+	var i ManagementRoute
+	err := row.Scan(
+		&i.ID,
+		&i.RouteName,
+		&i.Origin,
+		&i.Destination,
+	)
+	return i, err
 }

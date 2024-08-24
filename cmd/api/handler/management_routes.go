@@ -2,13 +2,14 @@ package handler
 
 import (
 	"database/sql"
-	"errors"
-	"github.com/google/uuid"
-	"github.com/labstack/echo/v4"
-	"github.com/ylanzinhoy/sistema-de-reserva-de-passagem/internal/entity"
-	db "github.com/ylanzinhoy/sistema-de-reserva-de-passagem/sql"
 	"log"
 	"net/http"
+
+	"github.com/google/uuid"
+	"github.com/labstack/echo/v4"
+	"github.com/ylanzinhoy/sistema-de-reserva-de-passagem/cmd/api/errors"
+	"github.com/ylanzinhoy/sistema-de-reserva-de-passagem/internal/entity"
+	db "github.com/ylanzinhoy/sistema-de-reserva-de-passagem/sql"
 )
 
 type ManagementRoutesHandler struct {
@@ -25,14 +26,7 @@ func (s *ManagementRoutesHandler) GetManagementRoutesById(echo echo.Context) err
 
 	route, err := s.dbHandler.GetRouteById(echo.Request().Context(), params)
 	if err != nil {
-
-		if errors.Is(err, sql.ErrNoRows) {
-			return echo.JSON(http.StatusNotFound, map[string]string{
-				"message": "Id not found",
-			})
-		}
-
-		return echo.JSON(http.StatusInternalServerError, map[string]string{})
+		return errors.IdNotFound(err, echo)
 	}
 
 	dto := &entity.ManagementRoute{
@@ -86,7 +80,7 @@ func (s *ManagementRoutesHandler) PostManagementRoutes(echo echo.Context) error 
 func (s *ManagementRoutesHandler) PutManagementRoutes(echo echo.Context) error {
 	id := echo.Param("id")
 
-	var newManagementEntity entity.ManagementRoute
+	var newManagementEntity *entity.ManagementRoute
 
 	if err := echo.Bind(&newManagementEntity); err != nil {
 		return err
@@ -107,13 +101,26 @@ func (s *ManagementRoutesHandler) PutManagementRoutes(echo echo.Context) error {
 			Valid:  newManagementEntity.Origin != "",
 		},
 	}
-	err := s.dbHandler.UpdateManagementRoute(echo.Request().Context(), params)
+	value, err := s.dbHandler.UpdateManagementRoute(echo.Request().Context(), params)
 	if err != nil {
+		if err == sql.ErrNoRows {
+			return echo.JSON(404, map[string]string{
+				"message": err.Error(),
+			})
+		}
 		return echo.JSON(http.StatusInternalServerError, map[string]string{
-			"error": "Failed to update management route",
+			"error": err.Error(),
 		})
 	}
-	return nil
+
+	response := &entity.ManagementRoute{
+		Id:          id,
+		RouteName:   value.RouteName.String,
+		Origin:      value.Origin.String,
+		Destination: value.Destination.String,
+	}
+
+	return echo.JSON(http.StatusOK, response)
 }
 
 func (s *ManagementRoutesHandler) DeleteRoutes(echo echo.Context) error {
