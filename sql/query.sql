@@ -48,3 +48,19 @@ $5,
 $6,
           $7
 ) RETURNING management_routes_id, management_travel_id, ticket_price, total_seats, travel_start, travel_finish, travel_company;
+
+-- name: GetManagementTravelById :one
+SELECT * FROM management_travel WHERE management_travel_id = $1;
+
+-- name: GetAllManagementTravel :many
+SELECT * FROM management_travel;
+
+-- name: PutManagementTravel :one
+UPDATE management_travel
+    SET ticket_price = $2, total_seats = $3, travel_start = $4, travel_finish = $4, travel_company = $5
+WHERE management_travel_id = $1
+RETURNING *;
+
+-- name: DeleteManagementTravel :exec
+DELETE from management_travel
+WHERE management_travel_id = $1;

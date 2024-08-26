@@ -100,6 +100,51 @@ func (q *Queries) DeleteManagementRoute(ctx context.Context, id string) error {
 	return err
 }
 
+const deleteManagementTravel = `-- name: DeleteManagementTravel :exec
+DELETE from management_travel
+WHERE management_travel_id = $1
+`
+
+func (q *Queries) DeleteManagementTravel(ctx context.Context, managementTravelID uuid.UUID) error {
+	_, err := q.db.ExecContext(ctx, deleteManagementTravel, managementTravelID)
+	return err
+}
+
+const getAllManagementTravel = `-- name: GetAllManagementTravel :many
+SELECT management_travel_id, management_routes_id, ticket_price, total_seats, travel_start, travel_finish, travel_company FROM management_travel
+`
+
+func (q *Queries) GetAllManagementTravel(ctx context.Context) ([]ManagementTravel, error) {
+	rows, err := q.db.QueryContext(ctx, getAllManagementTravel)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+	var items []ManagementTravel
+	for rows.Next() {
+		var i ManagementTravel
+		if err := rows.Scan(
+			&i.ManagementTravelID,
+			&i.ManagementRoutesID,
+			&i.TicketPrice,
+			&i.TotalSeats,
+			&i.TravelStart,
+			&i.TravelFinish,
+			&i.TravelCompany,
+		); err != nil {
+			return nil, err
+		}
+		items = append(items, i)
+	}
+	if err := rows.Close(); err != nil {
+		return nil, err
+	}
+	if err := rows.Err(); err != nil {
+		return nil, err
+	}
+	return items, nil
+}
+
 const getManagementRouteAll = `-- name: GetManagementRouteAll :many
 select id, route_name, origin, destination from management_route ORDER by id
 `
@@ -132,6 +177,25 @@ func (q *Queries) GetManagementRouteAll(ctx context.Context) ([]ManagementRoute,
 	return items, nil
 }
 
+const getManagementTravelById = `-- name: GetManagementTravelById :one
+SELECT management_travel_id, management_routes_id, ticket_price, total_seats, travel_start, travel_finish, travel_company FROM management_travel WHERE management_travel_id = $1
+`
+
+func (q *Queries) GetManagementTravelById(ctx context.Context, managementTravelID uuid.UUID) (ManagementTravel, error) {
+	row := q.db.QueryRowContext(ctx, getManagementTravelById, managementTravelID)
+	var i ManagementTravel
+	err := row.Scan(
+		&i.ManagementTravelID,
+		&i.ManagementRoutesID,
+		&i.TicketPrice,
+		&i.TotalSeats,
+		&i.TravelStart,
+		&i.TravelFinish,
+		&i.TravelCompany,
+	)
+	return i, err
+}
+
 const getRouteById = `-- name: GetRouteById :one
 select id, route_name, origin, destination from management_route
 where id = $1 limit 1
@@ -145,6 +209,42 @@ func (q *Queries) GetRouteById(ctx context.Context, id string) (ManagementRoute,
 		&i.RouteName,
 		&i.Origin,
 		&i.Destination,
+	)
+	return i, err
+}
+
+const putManagementTravel = `-- name: PutManagementTravel :one
+UPDATE management_travel
+    SET ticket_price = $2, total_seats = $3, travel_start = $4, travel_finish = $4, travel_company = $5
+WHERE management_travel_id = $1
+RETURNING management_travel_id, management_routes_id, ticket_price, total_seats, travel_start, travel_finish, travel_company
+`
+
+type PutManagementTravelParams struct {
+	ManagementTravelID uuid.UUID
+	TicketPrice        float64
+	TotalSeats         int32
+	TravelStart        time.Time
+	TravelCompany      string
+}
+
+func (q *Queries) PutManagementTravel(ctx context.Context, arg PutManagementTravelParams) (ManagementTravel, error) {
+	row := q.db.QueryRowContext(ctx, putManagementTravel,
+		arg.ManagementTravelID,
+		arg.TicketPrice,
+		arg.TotalSeats,
+		arg.TravelStart,
+		arg.TravelCompany,
+	)
+	var i ManagementTravel
+	err := row.Scan(
+		&i.ManagementTravelID,
+		&i.ManagementRoutesID,
+		&i.TicketPrice,
+		&i.TotalSeats,
+		&i.TravelStart,
+		&i.TravelFinish,
+		&i.TravelCompany,
 	)
 	return i, err
 }

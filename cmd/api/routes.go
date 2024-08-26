@@ -18,5 +18,8 @@ func Routes(e *echo.Echo, queries *db.Queries) {
 	managementTraverHandler := handler.NewManagementTravelHandler(queries)
 	e.POST("/v1/management_travel", managementTraverHandler.CreateManagementTravel)
 	e.GET("/v1/management_travel/:id", managementTraverHandler.GetManagementTravelById)
+	e.GET("/v1/management_travel", managementTraverHandler.GetAllManagementTravels)
+	e.PUT("/v1/management_travel/:id", managementTraverHandler.UpdateManagementTravel)
+	e.DELETE("/v1/management_travel/:id", managementTraverHandler.DeleteManagementTravel)
 
 }

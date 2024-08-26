@@ -1,6 +1,9 @@
 run:
 	go run ./cmd/api
 
+sqlcgen:
+	sqlc generate
+
 createMigrate:
 	migrate create -ext=sql -dir=sql/migrations -seq init
 
