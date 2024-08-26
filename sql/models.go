@@ -27,3 +27,10 @@ type ManagementTravel struct {
 	TravelFinish       time.Time
 	TravelCompany      string
 }
+
+type ReservationSystem struct {
+	ReservationID      uuid.UUID
+	ManagementTravelID uuid.NullUUID
+	PassengerName      string
+	SeatNumber         int32
+}

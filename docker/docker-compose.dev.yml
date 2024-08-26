@@ -1,0 +1,38 @@
+services:
+  myapi:
+    image: ylanzey/sistema-de-reserva-de-passagem:latest
+    container_name: sistema-de-reserva-de-passagem-app
+    environment:
+      - TZ=America/Sao_paulo
+    ports:
+      - "8000:8000"
+    depends_on:
+      - postgres
+    networks:
+      - api_network_internal
+    volumes:
+      - myapi:/var/lib/myapi
+    command: sh -c "make migrateUp"
+
+  postgres:
+    image: postgres:latest
+    container_name: api_postgres_db
+    ports:
+      - "5432:5432"
+    environment:
+        POSTGRES_DB: sistema_de_passagem
+        POSTGRES_PASSWORD: postgres
+        POSTGRES_USER: postgres
+    volumes:
+      - postgres-data:/var/lib/postgres
+      - ./init.sql:/docker-entrypoint-initdb.d/init.sql
+    networks:
+      - api_network_internal
+
+volumes:
+  postgres-data:
+  myapi:
+
+networks:
+  api_network_internal:
+    driver: bridge

@@ -8,12 +8,12 @@ import (
 
 func Routes(e *echo.Echo, queries *db.Queries) {
 
-	managementHandler := handler.NewManagementRoutesHandler(queries)
-	e.GET("/v1/management_route", managementHandler.GetManagementRoutesAll)
-	e.GET("/v1/management_route/:id", managementHandler.GetManagementRoutesById)
-	e.POST("/v1/management_route", managementHandler.PostManagementRoutes)
-	e.PUT("/v1/management_route/:id", managementHandler.PutManagementRoutes)
-	e.DELETE("/v1/management_route/:id", managementHandler.DeleteRoutes)
+	managementRouteHandler := handler.NewManagementRoutesHandler(queries)
+	e.GET("/v1/management_route", managementRouteHandler.GetManagementRoutesAll)
+	e.GET("/v1/management_route/:id", managementRouteHandler.GetManagementRoutesById)
+	e.POST("/v1/management_route", managementRouteHandler.PostManagementRoutes)
+	e.PUT("/v1/management_route/:id", managementRouteHandler.PutManagementRoutes)
+	e.DELETE("/v1/management_route/:id", managementRouteHandler.DeleteRoutes)
 
 	managementTraverHandler := handler.NewManagementTravelHandler(queries)
 	e.POST("/v1/management_travel", managementTraverHandler.CreateManagementTravel)
