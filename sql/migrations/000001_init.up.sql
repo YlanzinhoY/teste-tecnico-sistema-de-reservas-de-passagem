@@ -1,4 +1,4 @@
-create table management_route(
+create table if not exists management_route(
     id varchar primary key,
     route_name varchar,
     origin varchar(50),

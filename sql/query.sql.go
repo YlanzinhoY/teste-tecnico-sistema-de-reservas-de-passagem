@@ -8,6 +8,9 @@ package sql
 import (
 	"context"
 	"database/sql"
+	"time"
+
+	"github.com/google/uuid"
 )
 
 const createManagementRoute = `-- name: CreateManagementRoute :exec
@@ -41,6 +44,51 @@ func (q *Queries) CreateManagementRoute(ctx context.Context, arg CreateManagemen
 	return err
 }
 
+const createManagementTravel = `-- name: CreateManagementTravel :exec
+
+insert into management_travel(
+    management_travel_id,
+    management_routes_id,
+    ticket_price,
+    total_seats,
+    travel_start,
+    travel_finish,
+    travel_company
+) values (
+$1,
+$2,
+$3,
+$4,
+$5,
+$6,
+          $7
+) RETURNING management_routes_id, management_travel_id, ticket_price, total_seats, travel_start, travel_finish, travel_company
+`
+
+type CreateManagementTravelParams struct {
+	ManagementTravelID uuid.UUID
+	ManagementRoutesID string
+	TicketPrice        float64
+	TotalSeats         int32
+	TravelStart        time.Time
+	TravelFinish       time.Time
+	TravelCompany      string
+}
+
+// -----------------------------------------------------------------------
+func (q *Queries) CreateManagementTravel(ctx context.Context, arg CreateManagementTravelParams) error {
+	_, err := q.db.ExecContext(ctx, createManagementTravel,
+		arg.ManagementTravelID,
+		arg.ManagementRoutesID,
+		arg.TicketPrice,
+		arg.TotalSeats,
+		arg.TravelStart,
+		arg.TravelFinish,
+		arg.TravelCompany,
+	)
+	return err
+}
+
 const deleteManagementRoute = `-- name: DeleteManagementRoute :exec
 
 delete from management_route
@@ -50,6 +98,38 @@ where id = $1
 func (q *Queries) DeleteManagementRoute(ctx context.Context, id string) error {
 	_, err := q.db.ExecContext(ctx, deleteManagementRoute, id)
 	return err
+}
+
+const getManagementRouteAll = `-- name: GetManagementRouteAll :many
+select id, route_name, origin, destination from management_route ORDER by id
+`
+
+func (q *Queries) GetManagementRouteAll(ctx context.Context) ([]ManagementRoute, error) {
+	rows, err := q.db.QueryContext(ctx, getManagementRouteAll)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+	var items []ManagementRoute
+	for rows.Next() {
+		var i ManagementRoute
+		if err := rows.Scan(
+			&i.ID,
+			&i.RouteName,
+			&i.Origin,
+			&i.Destination,
+		); err != nil {
+			return nil, err
+		}
+		items = append(items, i)
+	}
+	if err := rows.Close(); err != nil {
+		return nil, err
+	}
+	if err := rows.Err(); err != nil {
+		return nil, err
+	}
+	return items, nil
 }
 
 const getRouteById = `-- name: GetRouteById :one

@@ -6,6 +6,9 @@ package sql
 
 import (
 	"database/sql"
+	"time"
+
+	"github.com/google/uuid"
 )
 
 type ManagementRoute struct {
@@ -13,4 +16,14 @@ type ManagementRoute struct {
 	RouteName   sql.NullString
 	Origin      sql.NullString
 	Destination sql.NullString
+}
+
+type ManagementTravel struct {
+	ManagementTravelID uuid.UUID
+	ManagementRoutesID string
+	TicketPrice        float64
+	TotalSeats         int32
+	TravelStart        time.Time
+	TravelFinish       time.Time
+	TravelCompany      string
 }

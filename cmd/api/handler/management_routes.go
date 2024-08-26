@@ -20,6 +20,31 @@ func NewManagementRoutesHandler(dbHandler *db.Queries) *ManagementRoutesHandler 
 	return &ManagementRoutesHandler{dbHandler: dbHandler}
 }
 
+func (s *ManagementRoutesHandler) GetManagementRoutesAll(echo echo.Context) error {
+
+	values, err := s.dbHandler.GetManagementRouteAll(echo.Request().Context())
+
+	if err != nil {
+		return echo.JSON(http.StatusBadRequest, map[string]string{
+			"error": "bad request",
+		})
+	}
+
+	response := make([]entity.ManagementRoute, len(values))
+
+	for i, value := range values {
+		response[i] = entity.ManagementRoute{
+			Id:          value.ID,
+			RouteName:   value.RouteName.String,
+			Origin:      value.Origin.String,
+			Destination: value.Destination.String,
+		}
+	}
+
+	return echo.JSON(200, response)
+
+}
+
 func (s *ManagementRoutesHandler) GetManagementRoutesById(echo echo.Context) error {
 
 	params := echo.Param("id")
